@@ -10,7 +10,7 @@ shrink = 1.0
 angles2 = []
 
 print("")
-print("table of arctan( 1/2^n ) for PI = " + repr(units / 65536.0) + " units")
+print(f"table of arctan( 1/2^n ) for PI = {repr(units / 65536.0)} units")
 
 for n in range(1, 32):
 
@@ -26,7 +26,7 @@ for n in range(1, 32):
     shrink /= math.sqrt(1 + x * x)
 
 print(", ".join(angles2))
-print("shrink factor    = " + repr(shrink))
-print("shrink factor 2  = " + repr(int(shrink * (2 ** 32))))
-print("expansion factor = " + repr(1 / shrink))
+print(f"shrink factor    = {repr(shrink)}")
+print(f"shrink factor 2  = {repr(int(shrink * 2**32))}")
+print(f"expansion factor = {repr(1 / shrink)}")
 print("")

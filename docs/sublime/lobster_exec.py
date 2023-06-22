@@ -32,12 +32,7 @@ class AsyncProcess(object):
 
         self.start_time = time.time()
 
-        # Hide the console window on Windows
-        startupinfo = None
-        if os.name == "nt":
-            startupinfo = subprocess.STARTUPINFO()
-            #startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-
+        startupinfo = subprocess.STARTUPINFO() if os.name == "nt" else None
         # Set temporary PATH to locate executable in cmd
         if path:
             old_path = os.environ["PATH"]
@@ -46,7 +41,7 @@ class AsyncProcess(object):
             os.environ["PATH"] = os.path.expandvars(path)
 
         proc_env = os.environ.copy()
-        proc_env.update(env)
+        proc_env |= env
         for k, v in proc_env.items():
             proc_env[k] = os.path.expandvars(v)
 
@@ -86,13 +81,15 @@ class AsyncProcess(object):
                 # cmd.exe leaving the child running
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                subprocess.Popen("taskkill /PID " + str(self.proc.pid), startupinfo=startupinfo)
+                subprocess.Popen(
+                    f"taskkill /PID {str(self.proc.pid)}", startupinfo=startupinfo
+                )
             else:
                 self.proc.terminate()
             self.listener = None
 
     def poll(self):
-        return self.proc.poll() == None
+        return self.proc.poll() is None
 
     def exit_code(self):
         return self.proc.poll()
@@ -163,19 +160,19 @@ class LobsterExecCommand(sublime_plugin.WindowCommand, ProcessListener):
         self.proc = None
         if not self.quiet:
             if shell_cmd:
-                print("Running " + shell_cmd)
+                print(f"Running {shell_cmd}")
             else:
                 print("Running " + " ".join(cmd))
             sublime.status_message("Building")
 
-        show_panel_on_build = sublime.load_settings("Preferences.sublime-settings").get("show_panel_on_build", True)
-        if show_panel_on_build:
+        if show_panel_on_build := sublime.load_settings(
+            "Preferences.sublime-settings"
+        ).get("show_panel_on_build", True):
             self.window.run_command("show_panel", {"panel": "output.exec"})
 
         merged_env = env.copy()
         if self.window.active_view():
-            user_env = self.window.active_view().settings().get('build_env')
-            if user_env:
+            if user_env := self.window.active_view().settings().get('build_env'):
                 merged_env.update(user_env)
 
         # Change to the working dir, rather than spawning the process with it,
@@ -185,10 +182,10 @@ class LobsterExecCommand(sublime_plugin.WindowCommand, ProcessListener):
 
         self.debug_text = ""
         if shell_cmd:
-            self.debug_text += "[shell_cmd: " + shell_cmd + "]\n"
+            self.debug_text += f"[shell_cmd: {shell_cmd}" + "]\n"
         else:
-            self.debug_text += "[cmd: " + str(cmd) + "]\n"
-        self.debug_text += "[dir: " + str(os.getcwd()) + "]\n"
+            self.debug_text += f"[cmd: {str(cmd)}" + "]\n"
+        self.debug_text += f"[dir: {os.getcwd()}" + "]\n"
         if "PATH" in merged_env:
             self.debug_text += "[path: " + str(merged_env["PATH"]) + "]"
         else:
@@ -220,7 +217,7 @@ class LobsterExecCommand(sublime_plugin.WindowCommand, ProcessListener):
         try:
             str = data.decode(self.encoding)
         except:
-            str = "[Decode error - output not " + self.encoding + "]\n"
+            str = f"[Decode error - output not {self.encoding}" + "]\n"
             proc = None
 
         # Normalize newlines, Sublime Text always uses a single \n separator
@@ -236,7 +233,7 @@ class LobsterExecCommand(sublime_plugin.WindowCommand, ProcessListener):
         if not self.quiet:
             elapsed = time.time() - proc.start_time
             exit_code = proc.exit_code()
-            if exit_code == 0 or exit_code == None:
+            if exit_code == 0 or exit_code is None:
                 self.append_string(proc,
                     ("[Finished in %.1fs]" % (elapsed)))
             else:

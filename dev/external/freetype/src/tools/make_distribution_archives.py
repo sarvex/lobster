@@ -126,7 +126,7 @@ def main():
         if os.path.basename(f) not in (".gitignore", ".mailmap")
     ]
 
-    freetype_dir = "freetype-" + version
+    freetype_dir = f"freetype-{version}"
     tmp_src_dir = os.path.join(build_dir, freetype_dir)
     os.makedirs(tmp_src_dir)
 
@@ -169,7 +169,7 @@ def main():
     os.unlink(os.path.join(tmp_src_dir, "docs", "mkdocs.yml"))
 
     # Generate our archives
-    freetype_tar = freetype_dir + ".tar"
+    freetype_tar = f"{freetype_dir}.tar"
 
     subprocess.check_call(
         ["tar", "-H", "ustar", "-chf", freetype_tar, freetype_dir],
@@ -184,18 +184,14 @@ def main():
 
     ftwinversion = "ft" + "".join(version.split("."))
     subprocess.check_call(
-        ["zip", "-qlr9", ftwinversion + ".zip", freetype_dir], cwd=build_dir
+        ["zip", "-qlr9", f"{ftwinversion}.zip", freetype_dir], cwd=build_dir
     )
 
     # Copy file to output directory now.
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
-    for f in (
-        freetype_tar + ".gz",
-        freetype_tar + ".xz",
-        ftwinversion + ".zip",
-    ):
+    for f in (f"{freetype_tar}.gz", f"{freetype_tar}.xz", f"{ftwinversion}.zip"):
         shutil.copy(
             os.path.join(build_dir, f), os.path.join(args.output_dir, f)
         )

@@ -18,7 +18,7 @@ TRACE_DEF_FILES = ["include/freetype/internal/fttrace.h"]
 
 
 def usage():
-    print("Usage: %s [option]" % sys.argv[0])
+    print(f"Usage: {sys.argv[0]} [option]")
     print("Search used-but-defined and defined-but-not-used trace_XXX macros")
     print("")
     print("  --help:")
@@ -26,11 +26,11 @@ def usage():
     print("")
     print("  --src-dirs=dir1:dir2:...")
     print("        Specify the directories of C source files to be checked")
-    print("        Default is %s" % ":".join(SRC_FILE_DIRS))
+    print(f'        Default is {":".join(SRC_FILE_DIRS)}')
     print("")
     print("  --def-files=file1:file2:...")
     print("        Specify the header files including FT_TRACE_DEF()")
-    print("        Default is %s" % ":".join(TRACE_DEF_FILES))
+    print(f'        Default is {":".join(TRACE_DEF_FILES)}')
     print("")
 
 
@@ -102,18 +102,16 @@ for f in TRACE_DEF_FILES:
 
 print("# Trace component used in the implementations but not defined in "
       "fttrace.h.")
-cmpnt = list(USED_COMPONENT.keys())
-cmpnt.sort()
+cmpnt = sorted(USED_COMPONENT.keys())
 for c in cmpnt:
     if c not in KNOWN_COMPONENT:
-        print("Trace component %s (used in %s) is not defined." %
-              (c, ", ".join(USED_COMPONENT[c])))
+        print(
+            f'Trace component {c} (used in {", ".join(USED_COMPONENT[c])}) is not defined.'
+        )
 
 print("# Trace component is defined but not used in the implementations.")
-cmpnt = list(KNOWN_COMPONENT.keys())
-cmpnt.sort()
+cmpnt = sorted(KNOWN_COMPONENT.keys())
 for c in cmpnt:
     if c not in USED_COMPONENT:
         if c != "any":
-            print("Trace component %s (defined in %s) is not used." %
-                  (c, KNOWN_COMPONENT[c]))
+            print(f"Trace component {c} (defined in {KNOWN_COMPONENT[c]}) is not used.")

@@ -47,11 +47,10 @@ def save_controller(line):
     crc = ""
     pos = find_element("crc:", bindings)
     if pos >= 0:
-        crc = bindings[pos] + ","
+        crc = f"{bindings[pos]},"
         bindings.pop(pos)
 
-    guid_match = standard_guid_pattern.match(entry[1])
-    if guid_match:
+    if guid_match := standard_guid_pattern.match(entry[1]):
         groups = guid_match.groups()
         crc_value = groups[2] + groups[1]
         vid_value = groups[4] + groups[3]
@@ -63,12 +62,12 @@ def save_controller(line):
             if crc != "":
                 crc_value = crc[4:-1]
         else:
-            print("Extracting CRC from GUID of " + name)
-            entry[1] = groups[0] + "0000" + "".join(groups[3:])
-            crc = "crc:" + crc_value + ","
+            print(f"Extracting CRC from GUID of {name}")
+            entry[1] = f"{groups[0]}0000" + "".join(groups[3:])
+            crc = f"crc:{crc_value},"
 
         if (vid_value, pid_value, crc_value) in invalid_controllers:
-            print("Controller '%s' not unique, skipping" % name)
+            print(f"Controller '{name}' not unique, skipping")
             return
 
     pos = find_element("sdk", bindings)
@@ -97,7 +96,9 @@ def write_controllers():
         if (entry_id in controller_guids and entry_id not in conditionals):
             current_name = entry[2]
             existing_name = controller_guids[entry_id][2]
-            print("Warning: entry '%s' is duplicate of entry '%s'" % (current_name, existing_name))
+            print(
+                f"Warning: entry '{current_name}' is duplicate of entry '{existing_name}'"
+            )
 
             if (not current_name.startswith("(DUPE)")):
                 entry[2] = f"(DUPE) {current_name}"
@@ -111,7 +112,7 @@ def write_controllers():
         line = "".join(entry) + "\n"
         line = line.replace("\t", "    ")
         if not line.endswith(",\n") and not line.endswith("*/\n") and not line.endswith(",\r\n") and not line.endswith("*/\r\n"):
-            print("Warning: '%s' is missing a comma at the end of the line" % (line))
+            print(f"Warning: '{line}' is missing a comma at the end of the line")
         output.write(line)
 
     controllers = []
